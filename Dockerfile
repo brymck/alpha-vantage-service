@@ -2,7 +2,7 @@
 FROM golang:alpine as builder
 
 # Install dependencies
-RUN apk update && apk add --no-cache ca-certificates git make protobuf-dev tzdata && update-ca-certificates
+RUN apk update && apk add --no-cache ca-certificates git make protobuf-dev tzdata upx && update-ca-certificates
 WORKDIR /src
 
 # Use an uncredentialed user
@@ -19,6 +19,7 @@ RUN go mod download
 COPY . .
 RUN CGO_ENABLED=0 GOOS=linux GOARCH=amd64 make build PROTO_PATH=/usr/include
 RUN mv service /bin/service
+RUN upx --best /bin/service
 
 # Base deploy image
 FROM scratch
