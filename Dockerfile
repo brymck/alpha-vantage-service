@@ -19,7 +19,7 @@ RUN go mod download
 COPY . .
 RUN CGO_ENABLED=0 GOOS=linux GOARCH=amd64 make build PROTO_PATH=/usr/include
 RUN mv service /bin/service
-RUN upx --best /bin/service
+RUN upx /bin/service
 
 # Base deploy image
 FROM scratch
