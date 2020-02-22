@@ -31,7 +31,7 @@ profile.out: $(GO_FILES) $(GENPROTO_FILES) | .init.stamp
 build: service
 
 service: $(GO_FILES) $(GENPROTO_FILES) | .init.stamp
-	go build -ldflags="-w -s" -o service .
+	go build -ldflags='-w -s' -o service .
 
 run: service
 	./service
