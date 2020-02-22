@@ -6,18 +6,23 @@ PROTO_DIR := proto
 
 all: proto test build
 
-proto:
+proto: genproto/.dirstamp
+
+genproto/.dirstamp:
 	mkdir -p genproto
-	protoc --go_out=plugins=grpc:genproto -I $(PROTO_DIR) $(PROTO_DIR)/*.proto
+	go mod download
+	protoc --go_out=plugins=grpc:genproto -I proto proto/*.proto
+	touch $@
 
 test: coverage.txt
 
 coverage.txt: $(GO_FILES)
+	go mod download
 	go test -race -coverprofile=coverage.txt -covermode=atomic ./...
 
 build: service
 
-service: $(GO_FILES)
+service: proto $(GO_FILES)
 	go mod download
 	go build -o service .
 
