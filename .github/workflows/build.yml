@@ -11,7 +11,7 @@ jobs:
       - name: Install Protocol Buffers
         run: sudo apt install libprotobuf-dev protobuf-compiler
       - name: Run tests
-        run: make test
+        run: env PATH=$PATH:$HOME/go/bin make test
       - name: Build binary
         run: make
       - name: Upload coverage to Codecov
