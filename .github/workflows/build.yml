@@ -8,6 +8,8 @@ jobs:
     steps:
       - name: Check out repo
         uses: actions/checkout@v2
+      - name: Install Protocol Buffers
+        run: sudo apt install libprotobuf-dev protobuf-compiler
       - name: Run tests
         run: make test
       - name: Build binary
