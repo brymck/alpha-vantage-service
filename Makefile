@@ -40,6 +40,6 @@ docker:
 	docker build . --tag $(SERVICE_NAME)
 
 clean:
-	rm -rf genproto/ .dep.stamp profile.out service
+	rm -rf genproto/ .init.stamp profile.out service
 
 .PHONY: all init proto test build run docker clean
