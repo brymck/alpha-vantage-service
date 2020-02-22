@@ -20,11 +20,11 @@ genproto/.dirstamp: dep
 	protoc -Iproto -I$(PROTO_PATH) --go_out=plugins=grpc:genproto proto/*.proto
 	touch $@
 
-test: coverage.txt
+test: profile.out
 
-coverage.txt: proto $(GO_FILES)
+profile.out: proto $(GO_FILES)
 	go mod download
-	go test -race -coverprofile=coverage.txt -covermode=atomic ./...
+	go test -race -coverprofile=profile.out -covermode=atomic ./...
 
 build: service
 
