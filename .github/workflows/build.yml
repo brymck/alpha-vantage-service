@@ -31,4 +31,6 @@ jobs:
       - name: Build the Docker image
         run: docker build . --tag $IMAGE_NAME --tag $IMAGE_NAME:${{ github.sha }}
       - name: Publish the Docker image
-        run: docker push $IMAGE_NAME $IMAGE_NAME:$GITHUB_SHA
+        run: |
+          docker push $IMAGE_NAME
+          docker push $IMAGE_NAME:${{ github.sha }}
