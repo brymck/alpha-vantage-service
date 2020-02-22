@@ -8,16 +8,16 @@ jobs:
     steps:
       - name: Check out repo
         uses: actions/checkout@v2
-      - name: Make project
-        run: make
-  upload-coverage:
-    name: Upload coverage to Codecov
-    runs-on: ubuntu-latest
-    steps:
-      - name: Check out repo
-        uses: actions/checkout@v2
-      - name: Make project
+      - name: Run tests
         run: make test
+      - name: Build binary
+        run: make
+      - name: Upload coverage to Codecov
+        uses: codecov/codecov-action@v1
+        with:
+          token: ${{ secrets.CODECOV_TOKEN }}
+          file: ./profile.out
+          fail_ci_if_error: false
   build-docker:
     name: Build Docker image
     runs-on: ubuntu-latest
