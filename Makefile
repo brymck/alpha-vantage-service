@@ -16,20 +16,20 @@ dep: .dep.stamp
 
 proto: genproto/.dirstamp
 
-genproto/.dirstamp: dep
+genproto/.dirstamp: .dep.stamp
 	mkdir -p genproto
 	protoc -Iproto -I$(PROTO_PATH) --go_out=plugins=grpc:genproto proto/*.proto
 	touch $@
 
 test: profile.out
 
-profile.out: proto $(GO_FILES)
+profile.out: genproto/.dirstamp $(GO_FILES)
 	go mod download
 	go test -race -coverprofile=profile.out -covermode=atomic ./...
 
 build: service
 
-service: proto $(GO_FILES)
+service: genproto/.dirstamp $(GO_FILES)
 	go mod download
 	go build -o service .
 
