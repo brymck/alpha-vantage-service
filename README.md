@@ -6,4 +6,6 @@ A service utilizing the Alpha Vantage API.
 Features
 --------
 
-* Hermetic builds using Dockerfile
+* [CODEOWNERS](https://help.github.com/en/github/creating-cloning-and-archiving-repositories/about-code-owners) for
+  defining roles and responsibilities
+* Hermetic Docker builds
