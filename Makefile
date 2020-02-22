@@ -12,6 +12,7 @@ dep: .dep.stamp
 .dep.stamp: go.mod go.sum
 	go get -u github.com/golang/protobuf/protoc-gen-go
 	go mod download
+	touch $@
 
 proto: genproto/.dirstamp
 
