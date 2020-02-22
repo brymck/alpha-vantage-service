@@ -1,0 +1,2 @@
+#!/bin/sh
+grpcurl -plaintext -d "{\"symbol\": \"$1\"}" :50051 brymck.alpha_vantage.v1.AlphaVantageAPI/GetQuote

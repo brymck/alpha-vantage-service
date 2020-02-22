@@ -2,15 +2,11 @@ package main
 
 import (
 	"context"
-	"encoding/json"
 	"fmt"
 	"net"
-	"net/http"
-	"net/url"
-	"os"
 	"sort"
 	"strconv"
-	"strings"
+	"time"
 
 	"github.com/sirupsen/logrus"
 	"google.golang.org/grpc"
@@ -23,9 +19,25 @@ const (
 	grpcPort = 50051
 )
 
-var (
-	log = logrus.New()
-)
+func init() {
+	formatter := &logrus.TextFormatter{FullTimestamp: true}
+	logrus.SetFormatter(formatter)
+}
+
+type GlobalQuoteResponse struct {
+	GlobalQuote struct {
+		Symbol           string `json:"01. symbol"`
+		Open             string `json:"02. open"`
+		High             string `json:"03. high"`
+		Low              string `json:"04. low"`
+		Price            string `json:"05. price"`
+		Volume           string `json:"06. volume"`
+		LatestTradingDay string `json:"07. latest trading day"`
+		PreviousClose    string `json:"08. previous close"`
+		Change           string `json:"09. change"`
+		ChangePercent    string `json:"10. change percent"`
+	} `json:"Global Quote"`
+}
 
 type TimeSeriesDailyResponse struct {
 	TimeSeriesDaily map[string]struct {
@@ -37,53 +49,61 @@ type server struct {
 	apiKey string
 }
 
-func (s *server) callApi(fn string, params map[string]string, v interface{}) error {
-	query := url.Values{}
-	query.Set("function", fn)
-	for k, v := range params {
-		query.Set(k, v)
-	}
-	query.Set("apikey", s.apiKey)
-	u := &url.URL{
-		Scheme:   "https",
-		Host:     "www.alphavantage.co",
-		Path:     "query",
-		RawQuery: query.Encode(),
-	}
-
-	resp, err := http.Get(u.String())
-	if err != nil {
-		return err
-	}
-	defer resp.Body.Close()
-	decoder := json.NewDecoder(resp.Body)
-	err = decoder.Decode(&v)
-	return err
+func trackTime(start time.Time, log *logrus.Entry) {
+	elapsed := time.Since(start)
+	log.Infof("completed in %d ms", elapsed.Milliseconds())
 }
 
-func stringToDate(s string) (*pb.Date, error) {
-	parts := strings.Split(s, "-")
-	if len(parts) != 3 {
-		return nil, fmt.Errorf("expected three parts: %s", s)
-	}
-	year, err := strconv.ParseInt(parts[0], 10, 32)
+func (s *server) GetQuote(_ context.Context, in *pb.GetQuoteRequest) (*pb.GetQuoteResponse, error) {
+	log := logrus.WithFields(logrus.Fields{"method": "GetQuote", "symbol": in.Symbol})
+	log.Info("received request")
+	defer trackTime(time.Now(), log)
+
+	var resp GlobalQuoteResponse
+	err := s.callApi("GLOBAL_QUOTE", map[string]string{"symbol": in.Symbol}, &resp)
 	if err != nil {
 		return nil, err
 	}
-	month, err := strconv.ParseInt(parts[1], 10, 32)
+	gq := resp.GlobalQuote
+	open, err := strconv.ParseFloat(gq.Open, 64)
 	if err != nil {
 		return nil, err
 	}
-	day, err := strconv.ParseInt(parts[2], 10, 32)
+	high, err := strconv.ParseFloat(gq.High, 64)
 	if err != nil {
 		return nil, err
 	}
-	return &pb.Date{Year: int32(year), Month: int32(month), Day: int32(day)}, nil
+	low, err := strconv.ParseFloat(gq.Low, 64)
+	if err != nil {
+		return nil, err
+	}
+	price, err := strconv.ParseFloat(gq.Price, 64)
+	if err != nil {
+		return nil, err
+	}
+	volume, err := strconv.ParseFloat(gq.Volume, 64)
+	if err != nil {
+		return nil, err
+	}
+	previousClose, err := strconv.ParseFloat(gq.PreviousClose, 64)
+	if err != nil {
+		return nil, err
+	}
+
+	return &pb.GetQuoteResponse{
+		Open:          open,
+		High:          high,
+		Low:           low,
+		Price:         price,
+		Volume:        volume,
+		PreviousClose: previousClose,
+	}, nil
 }
 
 func (s *server) GetTimeSeries(_ context.Context, in *pb.GetTimeSeriesRequest) (*pb.GetTimeSeriesResponse, error) {
-	log.Info("[GetTime] received request")
-	defer log.Info("[GetTime] completed request")
+	log := logrus.WithFields(logrus.Fields{"method": "GetTimeSeries", "symbol": in.Symbol})
+	log.Info("received request")
+	defer trackTime(time.Now(), log)
 
 	var resp TimeSeriesDailyResponse
 	err := s.callApi("TIME_SERIES_DAILY", map[string]string{"symbol": in.Symbol}, &resp)
@@ -120,25 +140,17 @@ func (s *server) GetTimeSeries(_ context.Context, in *pb.GetTimeSeriesRequest) (
 func main() {
 	lis, err := net.Listen("tcp", fmt.Sprintf(":%d", grpcPort))
 	if err != nil {
-		log.Fatalf("failed to listen: %v", err)
+		logrus.Fatalf("failed to listen: %v", err)
 	}
-	log.Infof("listening for gRPC on port %d\n", grpcPort)
+	logrus.Infof("listening for gRPC on port %d\n", grpcPort)
 
 	s := grpc.NewServer()
 	svc := &server{}
-	mustMapEnv(&svc.apiKey, "ALPHA_VANTAGE_API_KEY")
+	mustGetenv(&svc.apiKey, "ALPHA_VANTAGE_API_KEY")
 	pb.RegisterAlphaVantageAPIServer(s, svc)
 	reflection.Register(s)
 	err = s.Serve(lis)
 	if err != nil {
-		log.Fatalf("failed to server: %v", err)
+		logrus.Fatalf("failed to server: %v", err)
 	}
-}
-
-func mustMapEnv(target *string, envKey string) {
-	v := os.Getenv(envKey)
-	if v == "" {
-		panic(fmt.Sprintf("environment variable %q not set", envKey))
-	}
-	*target = v
 }

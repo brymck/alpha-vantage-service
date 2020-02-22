@@ -6,8 +6,38 @@ option go_package = "genproto";
 
 // An example API
 service AlphaVantageAPI {
-    // Get the current time
+    // Get the latest quote for a security
+    rpc GetQuote (GetQuoteRequest) returns (GetQuoteResponse);
+
+    // Get the price time series for a security
     rpc GetTimeSeries (GetTimeSeriesRequest) returns (GetTimeSeriesResponse);
+}
+
+// A request for a quote
+message GetQuoteRequest {
+    // The public ticker symbol for the stock
+    string symbol = 1;
+}
+
+// A response to a quote request
+message GetQuoteResponse {
+    // Open price
+    double open = 1;
+
+    // High price
+    double high = 2;
+
+    // Low price
+    double low = 3;
+
+    // Current price
+    double price = 4;
+
+    // Daily volume
+    double volume = 5;
+
+    // Previous close
+    double previous_close = 6;
 }
 
 // A request for time series
