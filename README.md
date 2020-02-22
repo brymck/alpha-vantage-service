@@ -1,6 +1,7 @@
 alpha-vantage-service
 =====================
 
+![Build](https://github.com/brymck/alpha-vantage-service/workflows/Build/badge.svg)
 [![codecov](https://codecov.io/gh/brymck/alpha-vantage-service/branch/master/graph/badge.svg)](https://codecov.io/gh/brymck/alpha-vantage-service)
 
 A service utilizing the Alpha Vantage API.
