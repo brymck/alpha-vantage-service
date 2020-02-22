@@ -17,7 +17,8 @@ RUN go mod download
 
 # Build
 COPY . .
-RUN CGO_ENABLED=0 GOOS=linux GOARCH=amd64 make build && mv service /bin/service
+RUN CGO_ENABLED=0 GOOS=linux GOARCH=amd64 make build PROTO_PATH=/usr/include
+RUN mv service /bin/service
 
 # Base deploy image
 FROM scratch

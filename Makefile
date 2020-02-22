@@ -2,6 +2,7 @@ PROTOS := example
 
 SERVICE_NAME := $(notdir $(CURDIR))
 GO_FILES := $(shell find . -name '*.go')
+PROTO_PATH := /usr/local/include
 PROTO_DIR := proto
 
 all: dep proto test build
@@ -16,7 +17,7 @@ proto: genproto/.dirstamp
 
 genproto/.dirstamp: dep
 	mkdir -p genproto
-	protoc -Iproto -I/usr/local/include -I/usr/include --go_out=plugins=grpc:genproto proto/*.proto
+	protoc -Iproto -I$(PROTO_PATH) --go_out=plugins=grpc:genproto proto/*.proto
 	touch $@
 
 test: coverage.txt
