@@ -21,12 +21,14 @@ jobs:
   build-docker:
     name: Build Docker image
     runs-on: ubuntu-latest
+    env:
+      IMAGE_NAME: docker.pkg.github.com/${{ github.repository }}/alpha-vantage-service
     steps:
       - name: Check out repo
         uses: actions/checkout@v2
       - name: Log in to Docker
-        run: echo ${{ secrets.GITHUB_TOKEN }} | docker login --username $GITHUB_ACTOR --password-stdin docker.pkg.github.com
+        run: echo ${{ github.token }} | docker login --username ${{ github.actor }} --password-stdin docker.pkg.github.com
       - name: Build the Docker image
-        run: docker build . --file Dockerfile --tag docker.pkg.github.com/$GITHUB_REPOSITORY/alpha-vantage-service:$GITHUB_SHA
+        run: docker build . --tag $IMAGE_NAME --tag $IMAGE_NAME:${{ github.sha }}
       - name: Publish the Docker image
-        run: docker push docker.pkg.github.com/$GITHUB_REPOSITORY/alpha-vantage-service:$GITHUB_SHA
+        run: docker push $IMAGE_NAME $IMAGE_NAME:$GITHUB_SHA
