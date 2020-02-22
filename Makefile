@@ -4,19 +4,24 @@ SERVICE_NAME := $(notdir $(CURDIR))
 GO_FILES := $(shell find . -name '*.go')
 PROTO_DIR := proto
 
-all: proto test build
+all: dep proto test build
+
+dep: .dep.stamp
+
+.dep.stamp: go.mod go.sum
+	go get -u github.com/golang/protobuf/protoc-gen-go
+	go mod download
 
 proto: genproto/.dirstamp
 
-genproto/.dirstamp:
+genproto/.dirstamp: dep
 	mkdir -p genproto
-	go mod download
-	protoc --go_out=plugins=grpc:genproto -I proto proto/*.proto
+	protoc -Iproto -I/usr/local/include -I/usr/include --go_out=plugins=grpc:genproto proto/*.proto
 	touch $@
 
 test: coverage.txt
 
-coverage.txt: $(GO_FILES)
+coverage.txt: proto $(GO_FILES)
 	go mod download
 	go test -race -coverprofile=coverage.txt -covermode=atomic ./...
 
