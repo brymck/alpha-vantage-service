@@ -2,7 +2,7 @@
 FROM golang:alpine as builder
 
 # Install dependencies
-RUN apk update && apk add --no-cache ca-certificates git make protobuf-dev tzdata upx && update-ca-certificates
+RUN apk update && apk add --no-cache ca-certificates git make protobuf-dev upx && update-ca-certificates
 WORKDIR /src
 
 # Use an uncredentialed user
@@ -25,7 +25,6 @@ RUN upx --best /bin/service
 FROM scratch
 COPY --from=builder /etc/ssl/certs/ca-certificates.crt /etc/ssl/certs/
 COPY --from=builder /etc/passwd /etc/passwd
-COPY --from=builder /usr/share/zoneinfo /usr/share/zoneinfo
 
 USER appuser
 
