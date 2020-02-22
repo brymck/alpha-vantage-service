@@ -15,7 +15,7 @@ ENV GO111MODULE=on
 COPY go.mod go.sum ./
 RUN go mod download
 
-# Build
+# Build and compress binary
 COPY . .
 RUN CGO_ENABLED=0 GOOS=linux GOARCH=amd64 make build PROTO_PATH=/usr/include
 RUN mv service /bin/service
