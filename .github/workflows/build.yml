@@ -25,7 +25,7 @@ jobs:
       - name: Check out repo
         uses: actions/checkout@v2
       - name: Log in to Docker
-        run: echo ${{ secrets.GITHUB_TOKEN }} | docker login --password-stdin docker.pkg.github.com
+        run: echo ${{ secrets.GITHUB_TOKEN }} | docker login --username $GITHUB_ACTOR --password-stdin docker.pkg.github.com
       - name: Build the Docker image
         run: docker build . --file Dockerfile --tag docker.pkg.github.com/$GITHUB_REPOSITORY/alpha-vantage-service:$(date +%s)
       - name: Publish the Docker image
