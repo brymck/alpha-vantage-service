@@ -2,10 +2,27 @@ name: Docker Image CI
 on:
   - push
 jobs:
-  build:
+  build-go:
+    name: Build Go
     runs-on: ubuntu-latest
     steps:
-    - name: Check out repo
-      uses: actions/checkout@v2
-    - name: Build the Docker image
-      run: docker build . --file Dockerfile --tag alpha-vantage-service:$(date +%s)
+      - name: Check out repo
+        uses: actions/checkout@v2
+      - name: Make project
+        run: make
+  upload-coverage:
+    name: Upload coverage to Codecov
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out repo
+        uses: actions/checkout@v2
+      - name: Make project
+        run: make test
+  build-docker:
+    name: Build Docker image
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out repo
+        uses: actions/checkout@v2
+      - name: Build the Docker image
+        run: docker build . --file Dockerfile --tag alpha-vantage-service:$(date +%s)
