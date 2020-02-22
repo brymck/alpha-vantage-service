@@ -1,4 +1,4 @@
-PROTOS := example
+OWNER := brymck
 
 SERVICE_NAME := $(notdir $(CURDIR))
 GO_FILES := $(shell find . -name '*.go')
@@ -37,7 +37,7 @@ run: service
 	./service
 
 docker:
-	docker build . --tag $(SERVICE_NAME)
+	docker build . --tag docker.pkg.github.com/$(OWNER)/$(SERVICE_NAME)/$(SERVICE_NAME)
 
 clean:
 	rm -rf genproto/ .init.stamp profile.out service
