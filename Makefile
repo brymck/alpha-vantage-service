@@ -3,34 +3,34 @@ PROTOS := example
 SERVICE_NAME := $(notdir $(CURDIR))
 GO_FILES := $(shell find . -name '*.go')
 PROTO_PATH := /usr/local/include
-PROTO_DIR := proto
+PROTO_FILES := $(shell find proto -name '*.proto')
+GENPROTO_FILES := $(patsubst proto/%.proto,genproto/%.pb.go,$(PROTO_FILES))
 
-all: dep proto test build
+all: proto test build
 
-dep: .dep.stamp
+init: .init.stamp
 
-.dep.stamp: go.mod go.sum
+.init.stamp:
 	go get -u github.com/golang/protobuf/protoc-gen-go
 	go mod download
 	touch $@
 
-proto: genproto/.dirstamp
+proto: $(GENPROTO_FILES)
 
-genproto/.dirstamp: .dep.stamp
+genproto:
 	mkdir -p genproto
-	protoc -Iproto -I$(PROTO_PATH) --go_out=plugins=grpc:genproto proto/*.proto
-	touch $@
+
+genproto/%.pb.go: proto/%.proto | .init.stamp genproto
+	protoc -Iproto -I$(PROTO_PATH) --go_out=plugins=grpc:$(dir $@) $<
 
 test: profile.out
 
-profile.out: genproto/.dirstamp $(GO_FILES)
-	go mod download
+profile.out: $(GO_FILES) $(GENPROTO_FILES) | .init.stamp
 	go test -race -coverprofile=profile.out -covermode=atomic ./...
 
 build: service
 
-service: genproto/.dirstamp $(GO_FILES)
-	go mod download
+service: $(GO_FILES) $(GENPROTO_FILES) | .init.stamp
 	go build -o service .
 
 run: service
@@ -40,6 +40,6 @@ docker:
 	docker build . --tag $(SERVICE_NAME)
 
 clean:
-	rm -f service coverage.txt
+	rm -rf genproto/ .dep.stamp profile.out service
 
-.PHONY: all proto test build run docker clean
+.PHONY: all init proto test build run docker clean
