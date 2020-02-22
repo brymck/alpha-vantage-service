@@ -1,0 +1,21 @@
+syntax = "proto3";
+
+package brymck.alpha_vantage.v1;
+
+option go_package = "genproto";
+
+import "google/protobuf/timestamp.proto";
+
+// This is an example API.
+service AlphaVantageAPI {
+    // Get the current time.
+    rpc GetTime (GetTimeRequest) returns (GetTimeResponse);
+}
+
+message GetTimeRequest {
+    string id = 1;
+}
+
+message GetTimeResponse {
+    google.protobuf.Timestamp time = 1;
+}
