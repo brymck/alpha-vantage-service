@@ -27,6 +27,6 @@ jobs:
       - name: Log in to Docker
         run: echo ${{ secrets.GITHUB_TOKEN }} | docker login --username $GITHUB_ACTOR --password-stdin docker.pkg.github.com
       - name: Build the Docker image
-        run: docker build . --file Dockerfile --tag docker.pkg.github.com/$GITHUB_REPOSITORY/alpha-vantage-service:$(date +%s)
+        run: docker build . --file Dockerfile --tag docker.pkg.github.com/$GITHUB_REPOSITORY/alpha-vantage-service:$GITHUB_SHA
       - name: Publish the Docker image
-        run: docker push docker.pkg.github.com/$GITHUB_REPOSITORY/alpha-vantage-service:$(date +%s)
+        run: docker push docker.pkg.github.com/$GITHUB_REPOSITORY/alpha-vantage-service:$GITHUB_SHA
