@@ -143,7 +143,7 @@ func main() {
 	if err != nil {
 		logrus.Fatalf("failed to listen: %v", err)
 	}
-	logrus.Infof("listening for gRPC on port %s\n", port)
+	logrus.Infof("listening for gRPC on port %s", port)
 
 	s := grpc.NewServer()
 	svc := &server{}
