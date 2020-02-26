@@ -1,9 +1,7 @@
 name: Build
 
 on:
-  push:
-    branches:
-      - master
+  - push
 
 env:
   PROJECT_ID: ${{ secrets.RUN_PROJECT }}
@@ -12,8 +10,8 @@ env:
   ENV_VARS: ${{ secrets.ENV_VARS }}
 
 jobs:
-  build:
-    name: Build
+  build-go:
+    name: Build and test Go
     runs-on: ubuntu-latest
     steps:
       - name: Check out repo
@@ -27,6 +25,13 @@ jobs:
       - name: Install Protocol Buffers
         run: sudo apt-get install libprotobuf-dev protobuf-compiler
 
+      - name: Cache dependencies
+        uses: actions/cache@v1
+        with:
+          path: ~/go/pkg/mod
+          key: ${{ runner.os }}-go-${{ hashFiles('**/go.sum') }}
+          restore-keys: ${{ runner.os }}-go-
+
       - name: Run tests and build binary
         run: env PATH=$PATH:$HOME/go/bin make
 
@@ -37,6 +42,10 @@ jobs:
           file: ./profile.out
           fail_ci_if_error: false
 
+  build-gcloud:
+    name: Build container image
+    runs-on: ubuntu-latest
+    steps:
       - name: Set up gcloud CLI
         uses: GoogleCloudPlatform/github-actions/setup-gcloud@master
         with:
@@ -49,6 +58,24 @@ jobs:
 
       - name: Build and publish image
         run: gcloud builds submit --tag gcr.io/$PROJECT_ID/$SERVICE_NAME:$GITHUB_SHA
+
+  deploy-gcloud:
+    needs:
+      - build-go
+      - build-gcloud
+    if: github.ref == 'refs/heads/master'
+    name: Deploy container image
+    runs-on: ubuntu-latest
+    steps:
+      - name: Set up gcloud CLI
+        uses: GoogleCloudPlatform/github-actions/setup-gcloud@master
+        with:
+          version: '275.0.0'
+          service_account_email: ${{ secrets.SA_EMAIL }}
+          service_account_key: ${{ secrets.GOOGLE_APPLICATION_CREDENTIALS}}
+
+      - name: Configure gcloud CLI
+        run: gcloud config set project $PROJECT_ID
 
       - name: Deploy to Cloud Run
         run: gcloud run deploy $SERVICE_NAME
