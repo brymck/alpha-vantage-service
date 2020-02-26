@@ -9,6 +9,7 @@ env:
   PROJECT_ID: ${{ secrets.RUN_PROJECT }}
   RUN_REGION: ${{ secrets.RUN_REGION }}
   SERVICE_NAME: ${{ secrets.SERVICE_NAME }}
+  ENV_VARS: ${{ secrets.ENV_VARS }}
 
 jobs:
   build:
@@ -47,10 +48,11 @@ jobs:
         run: gcloud config set project $PROJECT_ID
 
       - name: Build and publish image
-        run: gcloud builds submit -t gcr.io/$PROJECT_ID/$SERVICE_NAME:$GITHUB_SHA
+        run: gcloud builds submit --tag gcr.io/$PROJECT_ID/$SERVICE_NAME:$GITHUB_SHA
 
       - name: Deploy to Cloud Run
         run: gcloud run deploy $SERVICE_NAME
           --region $RUN_REGION
           --image gcr.io/$PROJECT_ID/$SERVICE_NAME:$GITHUB_SHA
           --platform managed
+          --set-env-vars $ENV_VARS
