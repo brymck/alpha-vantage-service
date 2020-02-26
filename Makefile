@@ -30,6 +30,9 @@ profile.out: $(GO_FILES) $(GENPROTO_FILES) | .init.stamp
 
 build: service
 
+client: $(GO_FILES) $(GENPROTO_FILES) | .init.stamp
+	go build -ldflags='-w -s' -o client cmd/client/main.go
+
 service: $(GO_FILES) $(GENPROTO_FILES) | .init.stamp
 	go build -ldflags='-w -s' -o service .
 
@@ -40,6 +43,6 @@ docker:
 	docker build . --tag docker.pkg.github.com/$(OWNER)/$(SERVICE_NAME)/$(SERVICE_NAME)
 
 clean:
-	rm -rf genproto/ .init.stamp profile.out service
+	rm -rf genproto/ .init.stamp profile.out client service
 
 .PHONY: all init proto test build run docker clean
