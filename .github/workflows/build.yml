@@ -1,40 +1,56 @@
 name: Build
+
 on:
-  - push
+  push:
+    branches:
+      - master
+
+env:
+  PROJECT_ID: ${{ secrets.RUN_PROJECT }}
+  RUN_REGION: ${{ secrets.RUN_REGION }}
+  SERVICE_NAME: ${{ secrets.SERVICE_NAME }}
+
 jobs:
-  build-go:
-    name: Build Go
+  build:
+    name: Build
     runs-on: ubuntu-latest
     steps:
       - name: Check out repo
         uses: actions/checkout@v2
+
       - name: Set up Go 1.13
         uses: actions/setup-go@v1
         with:
           go-version: 1.13
+
       - name: Install Protocol Buffers
         run: sudo apt-get install libprotobuf-dev protobuf-compiler
+
       - name: Run tests and build binary
         run: env PATH=$PATH:$HOME/go/bin make
+
       - name: Upload coverage to Codecov
         uses: codecov/codecov-action@v1
         with:
           token: ${{ secrets.CODECOV_TOKEN }}
           file: ./profile.out
           fail_ci_if_error: false
-  build-docker:
-    name: Build Docker image
-    runs-on: ubuntu-latest
-    env:
-      IMAGE_NAME: docker.pkg.github.com/${{ github.repository }}/alpha-vantage-service
-    steps:
-      - name: Check out repo
-        uses: actions/checkout@v2
-      - name: Log in to Docker
-        run: echo ${{ github.token }} | docker login --username ${{ github.actor }} --password-stdin docker.pkg.github.com
-      - name: Build the Docker image
-        run: docker build . --tag $IMAGE_NAME --tag $IMAGE_NAME:${{ github.sha }}
-      - name: Publish the Docker image
-        run: |
-          docker push $IMAGE_NAME
-          docker push $IMAGE_NAME:${{ github.sha }}
+
+      - name: Set up gcloud CLI
+        uses: GoogleCloudPlatform/github-actions/setup-gcloud@master
+        with:
+          version: '275.0.0'
+          service_account_email: ${{ secrets.SA_EMAIL }}
+          service_account_key: ${{ secrets.GOOGLE_APPLICATION_CREDENTIALS}}
+
+      - name: Configure gcloud CLI
+        run: gcloud config set project $PROJECT_ID
+
+      - name: Build and publish image
+        run: gcloud builds submit -t gcr.io/$PROJECT_ID/$SERVICE_NAME:$GITHUB_SHA
+
+      - name: Deploy to Cloud Run
+        run: gcloud run deploy $SERVICE_NAME
+          --region $RUN_REGION
+          --image gcr.io/$PROJECT_ID/$SERVICE_NAME:$GITHUB_SHA
+          --platform managed
