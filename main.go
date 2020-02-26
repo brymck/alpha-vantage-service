@@ -4,6 +4,7 @@ import (
 	"context"
 	"fmt"
 	"net"
+	"os"
 	"sort"
 	"strconv"
 	"time"
@@ -13,10 +14,6 @@ import (
 	"google.golang.org/grpc/reflection"
 
 	pb "github.com/brymck/alpha-vantage-service/genproto"
-)
-
-const (
-	grpcPort = 50051
 )
 
 func init() {
@@ -138,11 +135,15 @@ func (s *server) GetTimeSeries(_ context.Context, in *pb.GetTimeSeriesRequest) (
 }
 
 func main() {
-	lis, err := net.Listen("tcp", fmt.Sprintf(":%d", grpcPort))
+	port := os.Getenv("PORT")
+	if port == "" {
+		port = "50051"
+	}
+	lis, err := net.Listen("tcp", fmt.Sprintf(":%s", port))
 	if err != nil {
 		logrus.Fatalf("failed to listen: %v", err)
 	}
-	logrus.Infof("listening for gRPC on port %d\n", grpcPort)
+	logrus.Infof("listening for gRPC on port %s\n", port)
 
 	s := grpc.NewServer()
 	svc := &server{}

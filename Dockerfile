@@ -30,5 +30,4 @@ USER appuser
 
 # Expose container
 COPY --from=builder /bin/service /bin/service
-EXPOSE 50051
 ENTRYPOINT ["/bin/service"]
