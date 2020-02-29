@@ -2,20 +2,11 @@ package main
 
 import (
 	"fmt"
-	"os"
 	"strconv"
 	"strings"
 
 	pb "github.com/brymck/alpha-vantage-service/genproto"
 )
-
-func mustGetenv(target *string, envKey string) {
-	v := os.Getenv(envKey)
-	if v == "" {
-		panic(fmt.Sprintf("environment variable %q not set", envKey))
-	}
-	*target = v
-}
 
 func stringToDate(s string) (*pb.Date, error) {
 	parts := strings.Split(s, "-")

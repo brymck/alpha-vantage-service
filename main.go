@@ -7,9 +7,13 @@ import (
 	"os"
 	"sort"
 	"strconv"
+	"strings"
 	"time"
 
+	secretmanager "cloud.google.com/go/secretmanager/apiv1beta1"
+	"github.com/brymck/helpers/env"
 	"github.com/sirupsen/logrus"
+	secretmanagerpb "google.golang.org/genproto/googleapis/cloud/secretmanager/v1beta1"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/reflection"
 
@@ -134,11 +138,34 @@ func (s *server) GetTimeSeries(_ context.Context, in *pb.GetTimeSeriesRequest) (
 	return &pb.GetTimeSeriesResponse{TimeSeries: ts}, nil
 }
 
-func main() {
-	port := os.Getenv("PORT")
-	if port == "" {
-		port = "50051"
+func getSecret(key string) (string, error) {
+	log := logrus.WithField("secret", key)
+	envKey := strings.ReplaceAll(strings.ToUpper(key), "-", "_")
+	apiKeyFromEnv := os.Getenv(envKey)
+	if apiKeyFromEnv != "" {
+		log.Infof("using value of environment variable %s for secret %s", envKey, key)
+		return apiKeyFromEnv, nil
 	}
+
+	ctx := context.Background()
+	client, err := secretmanager.NewClient(ctx)
+	if err != nil {
+		return "", fmt.Errorf("failed to set up client: %w", err)
+	}
+
+	accessRequest := &secretmanagerpb.AccessSecretVersionRequest{Name: key}
+
+	// Call the API.
+	result, err := client.AccessSecretVersion(ctx, accessRequest)
+	if err != nil {
+		return "", fmt.Errorf("failed to access secret: %v", err)
+	}
+	log.Infof("used Secrets Manager to retrieve secret %s", envKey)
+	return string(result.Payload.Data), nil
+}
+
+func main() {
+	port := env.GetPort("8080")
 	lis, err := net.Listen("tcp", fmt.Sprintf(":%s", port))
 	if err != nil {
 		logrus.Fatalf("failed to listen: %v", err)
@@ -146,8 +173,13 @@ func main() {
 	logrus.Infof("listening for gRPC on port %s", port)
 
 	s := grpc.NewServer()
-	svc := &server{}
-	mustGetenv(&svc.apiKey, "ALPHA_VANTAGE_API_KEY")
+	apiKey, err := getSecret("alpha-vantage-api-key")
+	if err != nil {
+		logrus.Fatalf("failed to retrieve API key: %v", err)
+	}
+	svc := &server{
+		apiKey: apiKey,
+	}
 	pb.RegisterAlphaVantageAPIServer(s, svc)
 	reflection.Register(s)
 	err = s.Serve(lis)
