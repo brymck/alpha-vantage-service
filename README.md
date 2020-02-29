@@ -21,10 +21,10 @@ Usage
 variable named `$ALPHA_VANTAGE_API_KEY`. Then run either the commands below for a standard or containerized build:
 
 ```zsh
-# Build a standard binary and run it
+# Build a standard binary and run it...
 make run
 
-# Build a container and run it
+# ...or build a container and run it
 make docker
 docker run -it --rm -p 50051:50051 -e ALPHA_VANTAGE_API_KEY=$ALPHA_VANTAGE_API_KEY docker.pkg.github.com/brymck/alpha-vantage-service/alpha-vantage-service
 ```
@@ -35,4 +35,13 @@ If you have [gRPCurl](https://github.com/fullstorydev/grpcurl) installed, you ca
 ```zsh
 bin/ts HYG
 bin/quote IVV
+```
+
+Once deployed, you can
+
+```zsh
+make client
+ADDR=$(gcloud run services describe alpha-vantage-service --platform managed --format 'value(status.url.scope())'):443
+
+./client IVV
 ```
