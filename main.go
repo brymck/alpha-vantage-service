@@ -138,12 +138,12 @@ func (s *server) GetTimeSeries(_ context.Context, in *pb.GetTimeSeriesRequest) (
 	return &pb.GetTimeSeriesResponse{TimeSeries: ts}, nil
 }
 
-func getSecret(secret string) (string, error) {
-	log := logrus.WithField("secret", secret)
-	envKey := strings.ReplaceAll(strings.ToUpper(secret), "-", "_")
+func getSecret(secretId string) (string, error) {
+	log := logrus.WithField("secretId", secretId)
+	envKey := strings.ReplaceAll(strings.ToUpper(secretId), "-", "_")
 	apiKeyFromEnv := os.Getenv(envKey)
 	if apiKeyFromEnv != "" {
-		log.Infof("using value of environment variable %s for secret %s", envKey, secret)
+		log.Infof("using value of environment variable %s for secret %s", envKey, secretId)
 		return apiKeyFromEnv, nil
 	}
 
@@ -156,7 +156,7 @@ func getSecret(secret string) (string, error) {
 		return "", fmt.Errorf("failed to set up client: %w", err)
 	}
 
-	name := fmt.Sprintf("%s/%s", project, secret)
+	name := fmt.Sprintf("projects/%s/secrets/%s/versions/latest", project, secretId)
 	accessRequest := &secretmanagerpb.AccessSecretVersionRequest{Name: name}
 
 	// Call the API.
