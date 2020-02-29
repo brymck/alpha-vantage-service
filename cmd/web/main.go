@@ -1,14 +1,9 @@
 package main
 
 import (
-	"fmt"
-	"net"
-
-	"github.com/brymck/helpers/env"
 	"github.com/brymck/helpers/secrets"
+	"github.com/brymck/helpers/servers"
 	log "github.com/sirupsen/logrus"
-	"google.golang.org/grpc"
-	"google.golang.org/grpc/reflection"
 
 	pb "github.com/brymck/alpha-vantage-service/genproto"
 	"github.com/brymck/alpha-vantage-service/pkg/alphavantage"
@@ -24,24 +19,17 @@ type application struct {
 }
 
 func main() {
-	port := env.GetPort("8080")
-	lis, err := net.Listen("tcp", fmt.Sprintf(":%s", port))
-	if err != nil {
-		log.Fatalf("failed to listen: %v", err)
-	}
-	log.Infof("listening for gRPC on port %s", port)
-
-	s := grpc.NewServer()
+	// Get Alpha Vantage API key
 	apiKey, err := secrets.AccessSecret("alpha-vantage-api-key")
 	if err != nil {
 		log.Fatalf("failed to retrieve API key: %v", err)
 	}
 	api := alphavantage.NewApi(apiKey)
+
 	app := &application{api: api}
-	pb.RegisterAlphaVantageAPIServer(s, app)
-	reflection.Register(s)
-	err = s.Serve(lis)
-	if err != nil {
-		log.Fatalf("failed to server: %v", err)
-	}
+
+	// Start server
+	s := servers.NewGrpcServer()
+	pb.RegisterAlphaVantageAPIServer(s.Server, app)
+	s.Serve()
 }
