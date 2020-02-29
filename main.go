@@ -4,16 +4,13 @@ import (
 	"context"
 	"fmt"
 	"net"
-	"os"
 	"sort"
 	"strconv"
-	"strings"
 	"time"
 
-	secretmanager "cloud.google.com/go/secretmanager/apiv1beta1"
 	"github.com/brymck/helpers/env"
+	"github.com/brymck/helpers/secrets"
 	"github.com/sirupsen/logrus"
-	secretmanagerpb "google.golang.org/genproto/googleapis/cloud/secretmanager/v1beta1"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/reflection"
 
@@ -138,36 +135,6 @@ func (s *server) GetTimeSeries(_ context.Context, in *pb.GetTimeSeriesRequest) (
 	return &pb.GetTimeSeriesResponse{TimeSeries: ts}, nil
 }
 
-func getSecret(secretId string) (string, error) {
-	log := logrus.WithField("secretId", secretId)
-	envKey := strings.ReplaceAll(strings.ToUpper(secretId), "-", "_")
-	apiKeyFromEnv := os.Getenv(envKey)
-	if apiKeyFromEnv != "" {
-		log.Infof("using value of environment variable %s for secret %s", envKey, secretId)
-		return apiKeyFromEnv, nil
-	}
-
-	project := env.MustGetEnv("PROJECT_ID")
-	log = log.WithField("project", project)
-
-	ctx := context.Background()
-	client, err := secretmanager.NewClient(ctx)
-	if err != nil {
-		return "", fmt.Errorf("failed to set up client: %w", err)
-	}
-
-	name := fmt.Sprintf("projects/%s/secrets/%s/versions/latest", project, secretId)
-	accessRequest := &secretmanagerpb.AccessSecretVersionRequest{Name: name}
-
-	// Call the API.
-	result, err := client.AccessSecretVersion(ctx, accessRequest)
-	if err != nil {
-		return "", fmt.Errorf("failed to access secret: %v", err)
-	}
-	log.Infof("used Secrets Manager to retrieve secret %s", envKey)
-	return string(result.Payload.Data), nil
-}
-
 func main() {
 	port := env.GetPort("8080")
 	lis, err := net.Listen("tcp", fmt.Sprintf(":%s", port))
@@ -177,7 +144,7 @@ func main() {
 	logrus.Infof("listening for gRPC on port %s", port)
 
 	s := grpc.NewServer()
-	apiKey, err := getSecret("alpha-vantage-api-key")
+	apiKey, err := secrets.AccessSecret("alpha-vantage-api-key")
 	if err != nil {
 		logrus.Fatalf("failed to retrieve API key: %v", err)
 	}
