@@ -1,4 +1,4 @@
-package main
+package alphavantage
 
 import (
 	"encoding/json"
@@ -6,13 +6,21 @@ import (
 	"net/url"
 )
 
-func (s *server) callApi(fn string, params map[string]string, v interface{}) error {
+type Api struct {
+	apiKey string
+}
+
+func NewApi(apiKey string) *Api {
+	return &Api{apiKey: apiKey}
+}
+
+func (api *Api) call(fn string, params map[string]string, v interface{}) error {
 	query := url.Values{}
 	query.Set("function", fn)
 	for k, v := range params {
 		query.Set(k, v)
 	}
-	query.Set("apikey", s.apiKey)
+	query.Set("apikey", api.apiKey)
 	u := &url.URL{
 		Scheme:   "https",
 		Host:     "www.alphavantage.co",

@@ -31,10 +31,10 @@ profile.out: $(GO_FILES) $(GENPROTO_FILES) | .init.stamp
 build: service
 
 client: $(GO_FILES) $(GENPROTO_FILES) | .init.stamp
-	go build -ldflags='-w -s' -o client cmd/client/main.go
+	go build -ldflags='-w -s' -o client cmd/client/*.go
 
 service: $(GO_FILES) $(GENPROTO_FILES) | .init.stamp
-	go build -ldflags='-w -s' -o service .
+	go build -ldflags='-w -s' -o service cmd/web/*.go
 
 run: service
 	./service
