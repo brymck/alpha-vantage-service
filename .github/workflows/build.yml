@@ -6,8 +6,7 @@ on:
 env:
   PROJECT_ID: ${{ secrets.RUN_PROJECT }}
   RUN_REGION: ${{ secrets.RUN_REGION }}
-  SERVICE_NAME: ${{ secrets.SERVICE_NAME }}
-  ENV_VARS: ${{ secrets.ENV_VARS }}
+  SERVICE_NAME: ${{ github.event.repository.name }}
 
 jobs:
   build-go:
@@ -88,4 +87,3 @@ jobs:
           --region $RUN_REGION
           --image gcr.io/$PROJECT_ID/$SERVICE_NAME:$GITHUB_SHA
           --platform managed
-          --set-env-vars $ENV_VARS
