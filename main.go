@@ -177,7 +177,6 @@ func main() {
 	logrus.Infof("listening for gRPC on port %s", port)
 
 	s := grpc.NewServer()
-	project := os.Getenv("PROJECT_ID")
 	apiKey, err := getSecret("alpha-vantage-api-key")
 	if err != nil {
 		logrus.Fatalf("failed to retrieve API key: %v", err)
