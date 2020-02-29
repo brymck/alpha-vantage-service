@@ -138,14 +138,17 @@ func (s *server) GetTimeSeries(_ context.Context, in *pb.GetTimeSeriesRequest) (
 	return &pb.GetTimeSeriesResponse{TimeSeries: ts}, nil
 }
 
-func getSecret(key string) (string, error) {
-	log := logrus.WithField("secret", key)
-	envKey := strings.ReplaceAll(strings.ToUpper(key), "-", "_")
+func getSecret(secret string) (string, error) {
+	log := logrus.WithField("secret", secret)
+	envKey := strings.ReplaceAll(strings.ToUpper(secret), "-", "_")
 	apiKeyFromEnv := os.Getenv(envKey)
 	if apiKeyFromEnv != "" {
-		log.Infof("using value of environment variable %s for secret %s", envKey, key)
+		log.Infof("using value of environment variable %s for secret %s", envKey, secret)
 		return apiKeyFromEnv, nil
 	}
+
+	project := env.MustGetEnv("PROJECT_ID")
+	log = log.WithField("project", project)
 
 	ctx := context.Background()
 	client, err := secretmanager.NewClient(ctx)
@@ -153,7 +156,8 @@ func getSecret(key string) (string, error) {
 		return "", fmt.Errorf("failed to set up client: %w", err)
 	}
 
-	accessRequest := &secretmanagerpb.AccessSecretVersionRequest{Name: key}
+	name := fmt.Sprintf("%s/%s", project, secret)
+	accessRequest := &secretmanagerpb.AccessSecretVersionRequest{Name: name}
 
 	// Call the API.
 	result, err := client.AccessSecretVersion(ctx, accessRequest)
@@ -173,6 +177,7 @@ func main() {
 	logrus.Infof("listening for gRPC on port %s", port)
 
 	s := grpc.NewServer()
+	project := os.Getenv("PROJECT_ID")
 	apiKey, err := getSecret("alpha-vantage-api-key")
 	if err != nil {
 		logrus.Fatalf("failed to retrieve API key: %v", err)
