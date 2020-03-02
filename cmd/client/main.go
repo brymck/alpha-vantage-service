@@ -35,7 +35,7 @@ func main() {
 	defer conn.Close()
 	c := pb.NewAlphaVantageAPIClient(conn)
 
-	ctx, cancel := context.WithTimeout(context.Background(), 5 * time.Second)
+	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
 	defer cancel()
 
 	r, err := c.GetQuote(ctx, &pb.GetQuoteRequest{Symbol: symbol})
