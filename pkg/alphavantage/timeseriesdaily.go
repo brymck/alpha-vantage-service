@@ -32,9 +32,13 @@ type timeSeriesDailyResponse struct {
 // Refer to the Alpha Vantage API documentation for more information:
 //
 // https://www.alphavantage.co/documentation/#daily
-func (api *AlphaVantageApi) GetTimeSeriesDaily(symbol string) ([]*TimeSeriesDailyItem, error) {
+func (api *AlphaVantageApi) GetTimeSeriesDaily(symbol string, full bool) ([]*TimeSeriesDailyItem, error) {
 	var resp timeSeriesDailyResponse
-	err := api.call("TIME_SERIES_DAILY", map[string]string{"symbol": symbol}, &resp)
+	outputsize := "compact"
+	if full {
+		outputsize = "full"
+	}
+	err := api.call("TIME_SERIES_DAILY", map[string]string{"symbol": symbol, "outputsize": outputsize}, &resp)
 	if err != nil {
 		return nil, err
 	}

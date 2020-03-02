@@ -40,7 +40,7 @@ func (app *application) GetTimeSeries(_ context.Context, in *pb.GetTimeSeriesReq
 	log.Info("received request")
 	defer trackTime(time.Now(), log)
 
-	timeSeriesDaily, err := app.api.GetTimeSeriesDaily(in.Symbol)
+	timeSeriesDaily, err := app.api.GetTimeSeriesDaily(in.Symbol, in.Full)
 	if err != nil {
 		return nil, err
 	}

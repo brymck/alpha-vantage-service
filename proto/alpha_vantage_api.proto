@@ -47,6 +47,11 @@ message GetQuoteResponse {
 message GetTimeSeriesRequest {
     // The public ticker symbol for the stock
     string symbol = 1;
+
+    // Whether to return the full time series for the stock. By default, only the latest 100 data points are retrieved.
+    // When anbled, the full-length time series of 20+ years of historical data are retrieved. Leaving this option
+    // false is recommended if you would like to reduce the data size of each API call.
+    bool full = 2;
 }
 
 // A response to a time series request
