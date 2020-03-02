@@ -37,7 +37,10 @@ message GetQuoteResponse {
     double volume = 5;
 
     // Previous close
-    double previous_close = 6;
+    Date latest_trading_day = 6;
+
+    // Previous close
+    double previous_close = 7;
 }
 
 // A request for time series

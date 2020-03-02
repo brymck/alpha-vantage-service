@@ -1,5 +1,8 @@
 package alphavantage
 
+import "github.com/brymck/alpha-vantage-service/pkg/models"
+
+// A Quote contains the latest price and volume information for a security.
 type Quote struct {
 	// Open price
 	Open float64
@@ -11,6 +14,8 @@ type Quote struct {
 	Price float64
 	// Daily volume
 	Volume float64
+	// Latest trading day
+	LatestTradingDay *models.Date
 	// Previous close
 	PreviousClose float64
 }
@@ -57,18 +62,22 @@ func (api *Api) GetQuote(symbol string) (*Quote, error) {
 	if err != nil {
 		return nil, err
 	}
+	latestTradingDay, err := asDate(gq.LatestTradingDay)
+	if err != nil {
+		return nil, err
+	}
 	previousClose, err := asFloat64(gq.PreviousClose)
 	if err != nil {
 		return nil, err
 	}
 
 	return &Quote{
-		Open:          open,
-		High:          high,
-		Low:           low,
-		Price:         price,
-		Volume:        volume,
-		PreviousClose: previousClose,
+		Open:             open,
+		High:             high,
+		Low:              low,
+		Price:            price,
+		Volume:           volume,
+		LatestTradingDay: latestTradingDay,
+		PreviousClose:    previousClose,
 	}, nil
 }
-

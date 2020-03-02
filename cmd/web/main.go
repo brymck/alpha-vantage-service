@@ -9,11 +9,6 @@ import (
 	"github.com/brymck/alpha-vantage-service/pkg/alphavantage"
 )
 
-func init() {
-	formatter := &log.TextFormatter{FullTimestamp: true}
-	log.SetFormatter(formatter)
-}
-
 type application struct {
 	api *alphavantage.Api
 }
