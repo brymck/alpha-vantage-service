@@ -21,25 +21,25 @@ message GetQuoteRequest {
 
 // A response to a quote request
 message GetQuoteResponse {
-    // Open price
+    // The open price
     double open = 1;
 
-    // High price
+    // The high price
     double high = 2;
 
-    // Low price
+    // The low price
     double low = 3;
 
-    // Current price
+    // The current price
     double price = 4;
 
-    // Daily volume
+    // The daily volume
     double volume = 5;
 
-    // Previous close
+    // The latest trading day
     Date latest_trading_day = 6;
 
-    // Previous close
+    // The previous close
     double previous_close = 7;
 }
 
@@ -62,6 +62,18 @@ message TimeSeriesDataPoint {
 
     // The open price
     double open = 2;
+
+    // The high price
+    double high = 3;
+
+    // The low price
+    double low = 4;
+
+    // The close price
+    double close = 5;
+
+    // The daily volume
+    double volume = 6;
 }
 
 // A whole or partial calendar date, where the time of day and time zone are not significant

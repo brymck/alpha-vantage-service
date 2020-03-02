@@ -25,12 +25,13 @@ func (app *application) GetQuote(_ context.Context, in *pb.GetQuoteRequest) (*pb
 	}
 
 	return &pb.GetQuoteResponse{
-		Open:          q.Open,
-		High:          q.High,
-		Low:           q.Low,
-		Price:         q.Price,
-		Volume:        q.Volume,
-		PreviousClose: q.PreviousClose,
+		Open:             q.Open,
+		High:             q.High,
+		Low:              q.Low,
+		Price:            q.Price,
+		Volume:           q.Volume,
+		LatestTradingDay: asProtobufDate(q.LatestTradingDay),
+		PreviousClose:    q.PreviousClose,
 	}, nil
 }
 
@@ -47,8 +48,12 @@ func (app *application) GetTimeSeries(_ context.Context, in *pb.GetTimeSeriesReq
 	ts := make([]*pb.TimeSeriesDataPoint, len(timeSeriesDaily))
 	for i, item := range timeSeriesDaily {
 		ts[i] = &pb.TimeSeriesDataPoint{
-			Date: asProtobufDate(item.Date),
-			Open: item.Open,
+			Date:   asProtobufDate(item.Date),
+			Open:   item.Open,
+			High:   item.High,
+			Low:    item.Low,
+			Close:  item.Close,
+			Volume: item.Volume,
 		}
 	}
 	return &pb.GetTimeSeriesResponse{TimeSeries: ts}, nil

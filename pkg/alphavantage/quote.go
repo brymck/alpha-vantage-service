@@ -35,6 +35,11 @@ type globalQuoteResponse struct {
 	} `json:"Global Quote"`
 }
 
+// GetQuote retrieves the latest price and volume information for a security of your choice.
+//
+// See here for more information:
+//
+// https://www.alphavantage.co/documentation/
 func (api *AlphaVantageApi) GetQuote(symbol string) (*Quote, error) {
 	var resp globalQuoteResponse
 	err := api.call("GLOBAL_QUOTE", map[string]string{"symbol": symbol}, &resp)
