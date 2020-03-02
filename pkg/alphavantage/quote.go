@@ -35,7 +35,7 @@ type globalQuoteResponse struct {
 	} `json:"Global Quote"`
 }
 
-func (api *Api) GetQuote(symbol string) (*Quote, error) {
+func (api *AlphaVantageApi) GetQuote(symbol string) (*Quote, error) {
 	var resp globalQuoteResponse
 	err := api.call("GLOBAL_QUOTE", map[string]string{"symbol": symbol}, &resp)
 	if err != nil {

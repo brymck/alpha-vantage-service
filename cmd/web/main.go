@@ -10,7 +10,7 @@ import (
 )
 
 type application struct {
-	api *alphavantage.Api
+	api *alphavantage.AlphaVantageApi
 }
 
 func main() {

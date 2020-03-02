@@ -17,7 +17,7 @@ type TimeSeriesDailyResponse struct {
 	} `json:"Time Series (Daily)"`
 }
 
-func (api *Api) GetTimeSeriesDaily(symbol string) ([]*TimeSeriesDailyItem, error) {
+func (api *AlphaVantageApi) GetTimeSeriesDaily(symbol string) ([]*TimeSeriesDailyItem, error) {
 	var resp TimeSeriesDailyResponse
 	err := api.call("TIME_SERIES_DAILY", map[string]string{"symbol": symbol}, &resp)
 	if err != nil {
