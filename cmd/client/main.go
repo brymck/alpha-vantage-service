@@ -9,7 +9,7 @@ import (
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/credentials"
 
-	pb "github.com/brymck/alpha-vantage-service/genproto"
+	pb "github.com/brymck/alpha-vantage-service/genproto/brymck/alpha_vantage/v1"
 )
 
 func getConnection(addr string) (*grpc.ClientConn, error) {

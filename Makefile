@@ -17,11 +17,9 @@ init: .init.stamp
 
 proto: $(GENPROTO_FILES)
 
-genproto:
-	mkdir -p genproto
-
-genproto/%.pb.go: proto/%.proto | .init.stamp genproto
-	protoc -Iproto -I$(PROTO_PATH) --go_out=plugins=grpc:$(dir $@) $<
+genproto/%.pb.go: proto/%.proto | .init.stamp
+	mkdir -p $(dir $@)
+	protoc -Iproto -I$(PROTO_PATH) --go_out=plugins=grpc:genproto $<
 
 test: profile.out
 

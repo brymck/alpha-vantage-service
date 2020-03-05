@@ -1,7 +1,7 @@
 package main
 
 import (
-	pb "github.com/brymck/alpha-vantage-service/genproto"
+	pb "github.com/brymck/alpha-vantage-service/genproto/brymck/alpha_vantage/v1"
 	"github.com/brymck/alpha-vantage-service/pkg/models"
 )
 
